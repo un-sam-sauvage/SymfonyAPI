@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Customers;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,11 +17,29 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CustomersRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Customers::class);
-    }
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, Customers::class);
+	}
 
+
+	public function getCustomerFromClient(int $idCustomer, User|null $user)  {
+		return $this->createQueryBuilder('c')
+		->where('c.id = :idCustomer')
+		->setParameter('idCustomer', $idCustomer)
+		->andWhere('c.client = :user')
+		->setParameter('user', $user)
+		->getQuery()
+		->getOneOrNullResult();
+	}
+
+	public function getCustomersFromClient(User|null $user)  {
+		return $this->createQueryBuilder('c')
+		->where('c.client = :user')
+		->setParameter('user', $user)
+		->getQuery()
+		->getResult();
+	}
 //    /**
 //     * @return Customers[] Returns an array of Customers objects
 //     */
