@@ -25,7 +25,6 @@ class ClientController extends AbstractController
 		$customer = $customersRepository->getCustomerFromClient($idCustomer, $user);
 		$customerSerialized = $serializer->serialize($customer, 'json', ["groups" => "getCustomer"]);
 		if (empty($customer)) {
-			//TODO: faire la gestion d'erreur
 			return new JsonResponse("", 404, [], true);
 		}
 		return new JsonResponse($customerSerialized, 200, [], true);
@@ -43,5 +42,15 @@ class ClientController extends AbstractController
 		$customers = $customersRepository->getCustomersFromClient($user);
 		$customersSerialized = $serializer->serialize($customers, 'json', ["groups" => "getCustomer"]);
 		return new JsonResponse($customersSerialized, 200, [], true);
+	}
+	#[Route('/users/{idClient}/customers/{id}', name: 'app_delete_customer', methods: ['DELETE'])]
+	public function deleteCustomerFromClient (
+		int $idClient,
+		int $idCustomer,
+		CustomersRepository $customersRepository,
+		UserRepository $userRepository,
+	) : JsonResponse {
+		$user = $userRepository->find($idClient);
+		// $customersRepository->delete
 	}
 }

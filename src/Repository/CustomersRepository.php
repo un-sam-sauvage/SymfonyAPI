@@ -23,7 +23,7 @@ class CustomersRepository extends ServiceEntityRepository
 	}
 
 
-	public function getCustomerFromClient(int $idCustomer, User|null $user)  {
+	public function getCustomerFromClient(int $idCustomer, User|null $user) {
 		return $this->createQueryBuilder('c')
 		->where('c.id = :idCustomer')
 		->setParameter('idCustomer', $idCustomer)
@@ -39,6 +39,10 @@ class CustomersRepository extends ServiceEntityRepository
 		->setParameter('user', $user)
 		->getQuery()
 		->getResult();
+	}
+
+	public function deleteCustomerFromClient (int $idCustomer, User|null $idClient) {
+		// return $this->delete
 	}
 //    /**
 //     * @return Customers[] Returns an array of Customers objects
