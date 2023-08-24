@@ -2,6 +2,7 @@
 
 namespace App\EventSubscriber;
 
+use Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -18,7 +19,12 @@ class ExceptionSubscriber implements EventSubscriberInterface
 				"status" => $exception->getStatusCode(),
 				"message" => $exception->getMessage()
 			];
-		} else {
+		} else if ($exception instanceof Exception) {
+			$data = [
+				"status" => $exception->getCode(),
+				"message" => $exception->getMessage()
+			];
+		}else {
 			$data = [
 				"status" => 500,
 				"message" => $exception->getMessage()

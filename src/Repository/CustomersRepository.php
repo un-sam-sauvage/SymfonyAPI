@@ -41,8 +41,15 @@ class CustomersRepository extends ServiceEntityRepository
 		->getResult();
 	}
 
-	public function deleteCustomerFromClient (int $idCustomer, User|null $idClient) {
-		// return $this->delete
+	public function deleteCustomerFromClient (int $idCustomer, User|null $user) {
+		return $this->createQueryBuilder('c')
+		->delete()
+		->where('c.id = :idCustomer')
+		->setParameter('idCustomer', $idCustomer)
+		->andWhere('c.client = :user')
+		->setParameter('user', $user)
+		->getQuery()
+		->getResult();
 	}
 //    /**
 //     * @return Customers[] Returns an array of Customers objects
