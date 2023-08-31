@@ -33,10 +33,12 @@ class CustomersRepository extends ServiceEntityRepository
 		->getOneOrNullResult();
 	}
 
-	public function getCustomersFromClient(User|null $user)  {
+	public function getCustomersFromClient(User|null $user, $page, $limit)  {
 		return $this->createQueryBuilder('c')
 		->where('c.client = :user')
 		->setParameter('user', $user)
+		->setFirstResult(($page - 1) * $limit)
+		->setMaxResults($limit)
 		->getQuery()
 		->getResult();
 	}

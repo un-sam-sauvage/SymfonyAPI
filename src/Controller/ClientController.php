@@ -12,10 +12,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\VarDumper\VarDumper;
+// use Symfony\Component\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -33,7 +33,8 @@ class ClientController extends AbstractController
 	{
 		$user = $userRepository->find($idClient);
 		$customer = $customersRepository->getCustomerFromClient($idCustomer, $user);
-		$customerSerialized = $serializer->serialize($customer, 'json', ["groups" => "getCustomer"]);
+		$context = SerializationContext::create()->setGroups(['getCustomer']);
+		$customerSerialized = $serializer->serialize($customer, 'json', $context);
 		if (empty($customer)) {
 			throw new Exception("No customer found", 404);
 		}
@@ -46,16 +47,20 @@ class ClientController extends AbstractController
 		CustomersRepository $customersRepository,
 		UserRepository $userRepository,
 		SerializerInterface $serializer,
-		TagAwareCacheInterface $cachePool
+		TagAwareCacheInterface $cachePool,
+		Request $request
 	) : JsonResponse
 	{
+		$page = $request->get("page", 1);
+		$limit = $request->get("limit", 3);
 		$user = $userRepository->find($idClient);
 		$idCache = "getCustomersFromClient";
-		$customers = $cachePool->get($idCache, function (ItemInterface $item) use ($customersRepository, $user, $idClient) {
+		$customers = $cachePool->get($idCache, function (ItemInterface $item) use ($customersRepository, $user, $idClient, $page, $limit) {
 			$item->tag("customersCache");
-			return $customersRepository->getCustomersFromClient($user, $idClient);
+			return $customersRepository->getCustomersFromClient($user, $idClient, $page, $limit);
 		});
-		$customersSerialized = $serializer->serialize($customers, 'json', ["groups" => "getCustomer"]);
+		$context = SerializationContext::create()->setGroups(["getCustomer"]);
+		$customersSerialized = $serializer->serialize($customers, 'json', $context);
 		return new JsonResponse($customersSerialized, 200, [], true);
 	}
 
@@ -107,7 +112,8 @@ class ClientController extends AbstractController
 			$em->persist($newCustomer);
 			$em->flush();
 
-			$jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
+			$context = SerializationContext::create()->setGroups(["getCustomer"]);
+			$jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
 			$location = $urlGenerator->generate('app_client_root_app_get_customer', ['idCustomer' => $newCustomer->getId(), 'idClient' => $idClient], UrlGeneratorInterface::ABSOLUTE_URL);
 

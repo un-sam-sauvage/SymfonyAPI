@@ -16,10 +16,17 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductsRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Products::class);
-    }
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, Products::class);
+	}
+	public function getAllProducts($page, $limit) {
+		return $this->createQueryBuilder("p")
+		->setFirstResult(($page - 1) * $limit)
+		->setMaxResults($limit)
+		->getQuery()
+		->getResult();
+	}
 
 //    /**
 //     * @return Products[] Returns an array of Products objects
