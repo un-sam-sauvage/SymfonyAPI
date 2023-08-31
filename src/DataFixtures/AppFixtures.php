@@ -24,6 +24,13 @@ class AppFixtures extends Fixture
 		$user->setRoles(["ROLE_USER"]);
 		$user->setPassword($this->passwordHasher->hashPassword($user, "123"));
 		$manager->persist($user);
+
+		$userAdmin = new User();
+		$userAdmin->setEmail("admin@api.com");
+		$userAdmin->setUsername("admin");
+		$userAdmin->setRoles(["ROLE_ADMIN"]);
+		$userAdmin->setPassword($this->passwordHasher->hashPassword($userAdmin, "123"));
+		$manager->persist($userAdmin);
 		
 		for ($i = 0; $i < 10; $i++) {
 

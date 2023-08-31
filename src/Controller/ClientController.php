@@ -7,6 +7,7 @@ use App\Repository\CustomersRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,8 @@ use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\VarDumper\VarDumper;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('/api', name: 'app_client_root_')]
 class ClientController extends AbstractController
@@ -25,7 +28,7 @@ class ClientController extends AbstractController
 		int $idCustomer, 
 		CustomersRepository $customersRepository, 
 		UserRepository $userRepository,
-		SerializerInterface $serializer
+		SerializerInterface $serializer,
 	): JsonResponse 
 	{
 		$user = $userRepository->find($idClient);
@@ -42,16 +45,22 @@ class ClientController extends AbstractController
 		int $idClient,
 		CustomersRepository $customersRepository,
 		UserRepository $userRepository,
-		SerializerInterface $serializer
+		SerializerInterface $serializer,
+		TagAwareCacheInterface $cachePool
 	) : JsonResponse
 	{
 		$user = $userRepository->find($idClient);
-		$customers = $customersRepository->getCustomersFromClient($user);
+		$idCache = "getCustomersFromClient";
+		$customers = $cachePool->get($idCache, function (ItemInterface $item) use ($customersRepository, $user, $idClient) {
+			$item->tag("customersCache");
+			return $customersRepository->getCustomersFromClient($user, $idClient);
+		});
 		$customersSerialized = $serializer->serialize($customers, 'json', ["groups" => "getCustomer"]);
 		return new JsonResponse($customersSerialized, 200, [], true);
 	}
 
 	#[Route('/users/{idClient}/customers/{idCustomer}', name: 'app_delete_customer', methods: ['DELETE'])]
+	#[IsGranted('ROLE_ADMIN', message: "You don't have the enough rights to do this")]
 	public function deleteCustomerFromClient (
 		int $idClient,
 		int $idCustomer,
@@ -64,13 +73,14 @@ class ClientController extends AbstractController
 		if (empty($customer)) {
 			throw new Exception("No customer found", 404);
 		}
-		$return = $customersRepository->deleteCustomerFromClient($idCustomer, $user);
+		$customersRepository->deleteCustomerFromClient($idCustomer, $user);
 		$data = ["message" => "The customer has successfully been deleted"];
 		$dataSerialized = $serializer->serialize($data, 'json');
 		return new JsonResponse($dataSerialized, 200, [], true);
 	}
 
 	#[Route('/users/{idClient}/customers', name: 'app_create_customer', methods: ['POST'])]
+	#[IsGranted('ROLE_ADMIN', message: "You don't have the enough rights to do this")]
 	public function createCustomer(
 		int $idClient,
 		Request $request,
@@ -98,7 +108,7 @@ class ClientController extends AbstractController
 			$em->flush();
 
 			$jsonCustomer = $serializer->serialize($customer, 'json', ['groups' => 'getCustomer']);
-			
+
 			$location = $urlGenerator->generate('app_client_root_app_get_customer', ['idCustomer' => $newCustomer->getId(), 'idClient' => $idClient], UrlGeneratorInterface::ABSOLUTE_URL);
 
 			return new JsonResponse($jsonCustomer, 201, ["Location" => $location], true);
