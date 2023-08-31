@@ -8,14 +8,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('/api', name: 'app_products_root_')]
 class ProductController extends AbstractController
 {
 	#[Route('/products', name: 'app_products', methods: ['GET'])]
-	public function getProducts(ProductsRepository $productsRepository, SerializerInterface $serializer): JsonResponse
+	public function getProducts(
+		ProductsRepository $productsRepository, 
+		SerializerInterface $serializer,
+		TagAwareCacheInterface $cachePool
+	): JsonResponse
 	{
-		$products = $productsRepository->findAll();
+		$idCache = "getProducts";
+		$products = $cachePool->get($idCache, function (ItemInterface $item) use ($productsRepository) {
+			$item->tag("productsCache");
+			return $productsRepository->findAll();
+		});
 		$jsonProducts = $serializer->serialize($products, "json");
 		return new JsonResponse($jsonProducts, 200, [], true);
 	}
