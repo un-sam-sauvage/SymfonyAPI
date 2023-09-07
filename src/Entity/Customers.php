@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Hateoas\Configuration\Annotation as Hateoas;
 // use Symfony\Component\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\Since;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -16,24 +17,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 		href = @Hateoas\Route(
  * 			"app_client_root_app_get_customer",
  *			parameters = { 
-				"idClient" = "expr(object.getClient().getId())",
-				"idCustomer" = "expr(object.getId())"
-			},
+ *				"idCustomer" = "expr(object.getId())"
+ *			},
  * 		),
  
- * )
- * 
- * @Hateoas\Relation(
- * 		"delete",
- * 		href = @Hateoas\Route(
- * 			"app_client_root_app_delete_customer",
- * 			parameters = {
- * 				"idClient" = "expr(object.getClient().getId())",
- * 				"idCustomer" = "expr(object.getId())"
- * 			},
- * 		),
- * 		exclusion = @Hateoas\Exclusion(excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),
- * )
+ * ),
  */
 
 
@@ -44,18 +32,21 @@ class Customers
 	#[ORM\GeneratedValue]
 	#[ORM\Column]
 	#[Groups(["getCustomer"])]
+	#[Since("1.0")]
 	private ?int $id = null;
 
 	#[ORM\Column(length: 255)]
 	#[Groups(["getCustomer"])]
 	#[Assert\NotBlank]
 	#[Assert\Type('string')]
+	#[Since("1.0")]
 	private ?string $username = null;
 
 	#[ORM\Column(length: 255)]
 	#[Groups(["getCustomer"])]
 	#[Assert\NotBlank]
 	#[Assert\Type('string')]
+	#[Since("1.0")]
 	private ?string $email = null;
 
 	#[ORM\ManyToOne(inversedBy: 'customers')]
@@ -63,6 +54,7 @@ class Customers
 	#[Groups(["getCustomer"])]
 	#[Assert\NotBlank]
 	#[Assert\Type(User::class)]
+	#[Since("1.0")]
 	private ?User $client = null;
 
 	public function getId(): ?int

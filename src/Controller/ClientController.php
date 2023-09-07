@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Customers;
 use App\Repository\CustomersRepository;
 use App\Repository\UserRepository;
+use App\Service\VersioningService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -18,6 +19,10 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+
 
 #[Route('/api', name: 'app_client_root_')]
 class ClientController extends AbstractController
@@ -29,11 +34,13 @@ class ClientController extends AbstractController
 		CustomersRepository $customersRepository, 
 		UserRepository $userRepository,
 		SerializerInterface $serializer,
+		VersioningService $versioningService
 	): JsonResponse 
 	{
 		$user = $userRepository->find($idClient);
 		$customer = $customersRepository->getCustomerFromClient($idCustomer, $user);
 		$context = SerializationContext::create()->setGroups(['getCustomer']);
+		$context->setVersion($versioningService->getVersion());
 		$customerSerialized = $serializer->serialize($customer, 'json', $context);
 		if (empty($customer)) {
 			throw new Exception("No customer found", 404);
@@ -41,6 +48,39 @@ class ClientController extends AbstractController
 		return new JsonResponse($customerSerialized, 200, [], true);
 	}
 
+	/**
+	 * This allows to get all customers from a specified client
+	 * 
+	 * @OA\Response (
+	 * 		response=200,
+	 * 		description="Return all customers from a specified client",
+	 * 		@OA\JsonContent(
+	 * 			type="array",
+	 * 			@OA\Items(ref=@Model(type=Customers::class, groups={"getCustomer"}))
+	 * 		)
+	 * )
+	 * @OA\Parameter(
+	 * 		name="page",
+	 * 		in="query",
+	 * 		description="The page you want to get",
+	 * 		@OA\Schema(type="int")
+	 * )
+	 * 
+	 * @OA\Parameter(
+	 * 		name="limit",
+	 * 		in="query",
+	 * 		description="The number of customers you want",
+	 * 		@OA\Schema(type="int")
+	 * )
+	 * 
+	 * @OA\Tag(name="Customers")
+	 * 
+	 * @param CustomersRepository $customersRepository
+	 * @param UserRepository $userRepository
+	 * @param SerliazerInterface $serializer
+	 * @param Request $request
+	 * @return JsonResponse
+	 */
 	#[Route('/users/{idClient}/customers', name: 'app_get_customers', methods: ['GET'])]
 	public function getCustomersFromClient(
 		int $idClient,
@@ -48,7 +88,8 @@ class ClientController extends AbstractController
 		UserRepository $userRepository,
 		SerializerInterface $serializer,
 		TagAwareCacheInterface $cachePool,
-		Request $request
+		Request $request,
+		VersioningService $versioningService
 	) : JsonResponse
 	{
 		$page = $request->get("page", 1);
@@ -60,6 +101,7 @@ class ClientController extends AbstractController
 			return $customersRepository->getCustomersFromClient($user, $idClient, $page, $limit);
 		});
 		$context = SerializationContext::create()->setGroups(["getCustomer"]);
+		$context->setVersion($versioningService->getVersion());
 		$customersSerialized = $serializer->serialize($customers, 'json', $context);
 		return new JsonResponse($customersSerialized, 200, [], true);
 	}

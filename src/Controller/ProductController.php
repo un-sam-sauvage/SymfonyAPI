@@ -13,16 +13,52 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+
 
 #[Route('/api', name: 'app_products_root_')]
 class ProductController extends AbstractController
 {
+	/**
+	 * This allows to get all products
+	 * 
+	 * @OA\Response (
+	 * 		response=200,
+	 * 		description="Return all products",
+	 * 		@OA\JsonContent(
+	 * 			type="array",
+	 * 			@OA\Items(ref=@Model(type=Products::class))
+	 * 		)
+	 * )
+	 * @OA\Parameter(
+	 * 		name="page",
+	 * 		in="query",
+	 * 		description="The page you want to get",
+	 * 		@OA\Schema(type="int")
+	 * )
+	 * 
+	 * @OA\Parameter(
+	 * 		name="limit",
+	 * 		in="query",
+	 * 		description="The number of products you want",
+	 * 		@OA\Schema(type="int")
+	 * )
+	 * 
+	 * @OA\Tag(name="Products")
+	 * 
+	 * @param ProductsRepository $customersRepository
+	 * @param SerliazerInterface $serializer
+	 * @param Request $request
+	 * @return JsonResponse
+	 */
 	#[Route('/products', name: 'app_products', methods: ['GET'])]
 	public function getProducts(
 		ProductsRepository $productsRepository, 
 		SerializerInterface $serializer,
 		TagAwareCacheInterface $cachePool,
-		Request $request
+		Request $request,
 	): JsonResponse
 	{
 		$page = $request->get("page", 1);
@@ -37,7 +73,10 @@ class ProductController extends AbstractController
 	}
 
 	#[Route('/products/{id}', name: 'app_product', methods:['GET'])]
-	public function getProduct (Products $product,SerializerInterface $serializer) : JsonResponse {
+	public function getProduct (
+		Products $product, 
+		SerializerInterface $serializer
+	) : JsonResponse {
 		$jsonProduct = $serializer->serialize($product, "json");
 		return new JsonResponse($jsonProduct, 200, [], true);
 	}

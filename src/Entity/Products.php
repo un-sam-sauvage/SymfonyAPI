@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Repository\ProductsRepository;
 use Hateoas\Configuration\Annotation as Hateoas;
 use Doctrine\ORM\Mapping as ORM;
-
+use JMS\Serializer\Annotation\Since;
 
 /**
  * 
@@ -25,15 +25,19 @@ class Products
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column]
+	#[Since("1.0")]
 	private ?int $id = null;
 
 	#[ORM\Column(length: 255)]
+	#[Since("1.0")]
 	private ?string $name = null;
 
 	#[ORM\Column(length: 255, nullable: true)]
+	#[Since("1.0")]
 	private ?string $description = null;
 
 	#[ORM\Column]
+	#[Since("1.0")]
 	private ?int $price = null;
 
 	public function getId(): ?int
