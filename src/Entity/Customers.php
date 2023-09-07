@@ -17,10 +17,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 		href = @Hateoas\Route(
  * 			"app_client_root_app_get_customer",
  *			parameters = { 
- *				"idCustomer" = "expr(object.getId())"
- *			},
+ *				"idCustomer" = "expr(object.getId())",
+ *				"idClient" = "expr(object.getClient().getId())"
+ *			}
  * 		),
- 
  * ),
  */
 

@@ -22,7 +22,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
-
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api', name: 'app_client_root_')]
 class ClientController extends AbstractController
@@ -134,7 +134,8 @@ class ClientController extends AbstractController
 		SerializerInterface $serializer,
 		UserRepository $userRepository,
 		EntityManagerInterface $em,
-		UrlGeneratorInterface $urlGenerator
+		UrlGeneratorInterface $urlGenerator,
+		ValidatorInterface $validator
 		) : JsonResponse{
 			$input = str_replace(["{", "}", '"'], "", $request->getContent());
 			$input = explode(",", $input);
@@ -150,7 +151,10 @@ class ClientController extends AbstractController
 			$newCustomer->setUsername($customer["username"]);
 			$newCustomer->setEmail($customer["email"]);
 			$newCustomer->setClient($userRepository->find($idClient));
-			
+			$errors = $validator->validate($newCustomer);
+			if (!empty($errors)) {
+				throw new Exception("Errors while creating customer : ". (string) $errors);
+			}
 			$em->persist($newCustomer);
 			$em->flush();
 
