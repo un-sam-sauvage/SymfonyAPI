@@ -13,14 +13,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * 
  * @Hateoas\Relation(
- * 		"self",
- * 		href = @Hateoas\Route(
- * 			"app_client_root_app_get_customer",
- *			parameters = { 
- *				"idCustomer" = "expr(object.getId())",
- *				"idClient" = "expr(object.getClient().getId())"
- *			}
- * 		),
+* 		"self",
+* 		href = @Hateoas\Route(
+* 			"app_client_root_app_get_customer",
+*			parameters = { 
+*				"idClient" = "expr(object.getClient().getId())",
+*				"idCustomer" = "expr(object.getId())",
+*			}
+* 		),
+* 		exclusion = @Hateoas\Exclusion(groups="getCustomer", excludeIf="expr(not is_granted('ROLE_USER'))"),
  * ),
  */
 
