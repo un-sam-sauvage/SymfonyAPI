@@ -23,6 +23,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 * 		),
 * 		exclusion = @Hateoas\Exclusion(groups="getCustomer", excludeIf="expr(not is_granted('ROLE_USER'))"),
  * ),
+ *  * @Hateoas\Relation(
+* 		"delete",
+* 		href = @Hateoas\Route(
+* 			"app_client_root_app_delete_customer",
+*			parameters = { 
+*				"idClient" = "expr(object.getClient().getId())",
+*				"idCustomer" = "expr(object.getId())",
+*			}
+* 		),
+* 		exclusion = @Hateoas\Exclusion(groups="getCustomer", excludeIf="expr(not is_granted('ROLE_ADMIN'))"),
+ * ),
  */
 
 
