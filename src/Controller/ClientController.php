@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-// use Symfony\Component\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -150,7 +149,10 @@ class ClientController extends AbstractController
 			$newCustomer = new Customers();
 			$newCustomer->setUsername($customer["username"]);
 			$newCustomer->setEmail($customer["email"]);
-			$newCustomer->setClient($userRepository->find($idClient));
+			$user = $userRepository->findAll();
+			// $newCustomer->setClient($user);
+			return new JsonResponse($user);
+
 			$errors = $validator->validate($newCustomer);
 			if (!empty($errors)) {
 				throw new Exception("Errors while creating customer : ". (string) $errors);
