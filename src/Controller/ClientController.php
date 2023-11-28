@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customers;
+use App\Entity\User;
 use App\Repository\CustomersRepository;
 use App\Repository\UserRepository;
 use App\Service\VersioningService;
@@ -149,9 +150,12 @@ class ClientController extends AbstractController
 			$newCustomer = new Customers();
 			$newCustomer->setUsername($customer["username"]);
 			$newCustomer->setEmail($customer["email"]);
-			$user = $userRepository->findAll();
-			// $newCustomer->setClient($user);
-			return new JsonResponse($user);
+
+			// $user = $userRepository->find(3)->getEmail();
+			// $user = $userRepository->findUser(3);
+			$newCustomer->setClient($user);
+
+			// return new JsonResponse($user);
 
 			$errors = $validator->validate($newCustomer);
 			if (!empty($errors)) {
@@ -163,7 +167,14 @@ class ClientController extends AbstractController
 			$context = SerializationContext::create()->setGroups(["getCustomer"]);
 			$jsonCustomer = $serializer->serialize($customer, 'json', $context);
 
-			$location = $urlGenerator->generate('app_client_root_app_get_customer', ['idCustomer' => $newCustomer->getId(), 'idClient' => $idClient], UrlGeneratorInterface::ABSOLUTE_URL);
+			$location = $urlGenerator->generate(
+				'app_client_root_app_get_customer', 
+				[
+					'idCustomer' => $newCustomer->getId(), 
+					'idClient' => $idClient
+				], 
+				UrlGeneratorInterface::ABSOLUTE_URL
+			);
 
 			return new JsonResponse($jsonCustomer, 201, ["Location" => $location], true);
 	}
