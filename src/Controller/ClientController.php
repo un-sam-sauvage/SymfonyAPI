@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Customers;
-use App\Entity\User;
 use App\Repository\CustomersRepository;
 use App\Repository\UserRepository;
 use App\Service\VersioningService;
@@ -151,14 +150,12 @@ class ClientController extends AbstractController
 			$newCustomer->setUsername($customer["username"]);
 			$newCustomer->setEmail($customer["email"]);
 
-			// $user = $userRepository->find(3)->getEmail();
-			// $user = $userRepository->findUser(3);
-			$newCustomer->setClient($user);
-
-			// return new JsonResponse($user);
+			$newCustomer->setClient($userRepository->find($idClient));
 
 			$errors = $validator->validate($newCustomer);
-			if (!empty($errors)) {
+
+			if (count($errors) > 0) {
+				// dd($errors);
 				throw new Exception("Errors while creating customer : ". (string) $errors);
 			}
 			$em->persist($newCustomer);
