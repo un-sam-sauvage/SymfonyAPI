@@ -94,10 +94,10 @@ class ClientController extends AbstractController
 		$page = $request->get("page", 1);
 		$limit = $request->get("limit", 3);
 		$user = $userRepository->find($idClient);
-		$idCache = "getCustomersFromClient";
+		$idCache = "getCustomersFromClient". $page . "_". $limit;
 		$customers = $cachePool->get($idCache, function (ItemInterface $item) use ($customersRepository, $user, $idClient, $page, $limit) {
 			$item->tag("customersCache");
-			return $customersRepository->getCustomersFromClient($user, $idClient, $page, $limit);
+			return $customersRepository->getCustomersFromClient($user, $page, $limit);
 		});
 		$context = SerializationContext::create()->setGroups(["getCustomer"]);
 		$context->setVersion($versioningService->getVersion());

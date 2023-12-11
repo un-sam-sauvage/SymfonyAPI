@@ -63,7 +63,7 @@ class ProductController extends AbstractController
 	{
 		$page = $request->get("page", 1);
 		$limit = $request->get("limit", 3);
-		$idCache = "getProducts";
+		$idCache = "getProducts". $page. "_". $limit;
 		$products = $cachePool->get($idCache, function (ItemInterface $item) use ($productsRepository, $page, $limit) {
 			$item->tag("productsCache");
 			return $productsRepository->getAllProducts($page, $limit);
