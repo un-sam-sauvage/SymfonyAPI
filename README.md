@@ -13,9 +13,9 @@ Et enfin vous pourrez la remplir avec : `php bin/console doctrine:fixtures:load`
 ## Exéctuer votre première requête
 
 ⚠️ : Avant de faire votre première requête, il faudra génrér des certificats qui permettent d'assurer la sécurité
-Pour le faire, rester dans votre terminal et exécuter la commande : `php bin/console lexik:jwt:generate-keypair`
+Pour le faire, restez dans votre terminal et exécuter la commande : `php bin/console lexik:jwt:generate-keypair`
 
-Pour utiliser l'API, vous allez devoir vous connecter. Pour cela, commandez par démarrer le serveur symfony avec la commande : `symfony server:start`, n'oubliez pas de démarrer votre base de données également.
+Pour utiliser l'API, vous allez devoir vous connecter. Pour cela, commencez par démarrer le serveur symfony avec la commande : `symfony server:start`, n'oubliez pas de démarrer votre base de données également.
 Une fois que le serveur est prêt, rendez-vous sur postman, effectuez la requête POST sur http://localhost:8000/api/login_check avec en body : 
 ```json
 {
@@ -26,5 +26,6 @@ Une fois que le serveur est prêt, rendez-vous sur postman, effectuez la requêt
 Cela vous permet de récupérer un jeton d'identification, qu'il vous faudra passer dans les prochaines requêtes que vous voudrait faire en header avec bearer devant.
 vous pouvez accéder à la documentation à l'adresse suivante une fois le serveur démarré : http://localhost:8000/api/doc <br />
 
-Si, lors de l'éxécution d'une commande vous avez une erreur SSL, essayer de regénérer les certificats avec : `php bin/console lexik:jwt:generate-keypair -overwrite`
-S'il vous est demandé Sodium, vous pouvez le trouver dans votre fichier php.ini, il faudra décommenter la ligne extension=sodium
+### ⚠️ **Attention** :
+- Si, lors de l'éxécution d'une commande vous avez une erreur SSL, essayer de regénérer les certificats avec : `php bin/console lexik:jwt:generate-keypair -overwrite`
+- S'il vous est demandé Sodium, vous pouvez le trouver dans votre fichier php.ini, il faudra décommenter la ligne extension=sodium
